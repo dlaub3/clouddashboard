@@ -1,6 +1,4 @@
-import { Amplify } from "aws-amplify";
 import "@aws-amplify/ui-react/styles.css";
-import awsExports from "./../aws-exports";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import React from "react";
@@ -10,22 +8,10 @@ import {
   EC2Client,
 } from "@aws-sdk/client-ec2";
 import { fromCognitoIdentityPool } from "@aws-sdk/credential-providers";
+import { AWS_IDENTITY_POOL_ID, AWS_REGION } from "../env";
+import { DataGrid, GridRowsProp, GridColDef } from "@mui/x-data-grid";
 
-Amplify.configure(awsExports);
-
-interface InstanceRow {
-  name: string;
-  instanceId: string;
-  type: string;
-  state: string;
-  availabilityZone: string;
-  publicIP: string;
-  privateIP: string;
-}
-
-export const Table = (props: { user: any }) => {
-  const { user } = props;
-
+const getCognitoLoginData = (user: any) => {
   /**
    * NOTE:
    * Find a more conventional way to do this.
@@ -39,57 +25,88 @@ export const Table = (props: { user: any }) => {
   const COGNITO_TOKEN_KEY = user.keyPrefix + "." + user.username + ".idToken";
   const COGNITO_ID_TOKEN = () =>
     Promise.resolve<string>(user.pool.storage[COGNITO_TOKEN_KEY]);
-  const logins = {
+  return {
     [COGNITO_ID]: COGNITO_ID_TOKEN,
   };
+};
 
-  const credentials = fromCognitoIdentityPool({
-    identityPoolId: process.env.REACT_APP_IDENTITY_POOL_ID ?? "",
-    clientConfig: { region: process.env.REACT_APP_REGION ?? "" },
-    logins,
+const getCognitoCredentials = (user: any) => {
+  return fromCognitoIdentityPool({
+    identityPoolId: AWS_IDENTITY_POOL_ID,
+    clientConfig: { region: AWS_REGION },
+    logins: getCognitoLoginData(user),
   });
+};
+
+interface InstanceRow {
+  id: string;
+  name: string;
+  instanceId: string;
+  type: string;
+  state: string;
+  availabilityZone: string;
+  publicIP: string;
+  privateIP: string;
+}
+
+const columns: GridColDef[] = [
+  { field: "instanceId", headerName: "Instance Id", width: 150 },
+  { field: "name", headerName: "Name", width: 150 },
+  { field: "type", headerName: "Type", width: 150 },
+  { field: "state", headerName: "State", width: 150 },
+  { field: "availabilityZone", headerName: "Availability Zone", width: 150 },
+  { field: "publicIP", headerName: "Public IP", width: 150 },
+  { field: "publicIP", headerName: "Private IP", width: 150 },
+];
+
+export const Table = (props: { user: any }) => {
+  const { user } = props;
 
   const ec2 = new EC2Client({
-    region: process.env.REACT_APP_REGION ?? "",
-    credentials: credentials,
+    region: AWS_REGION,
+    credentials: getCognitoCredentials(user),
   });
 
-  const getData = async (set: (x: {}) => void) => {
+  const getData = async () => {
     const command = new DescribeInstancesCommand({});
     const data = await ec2.send(command);
-    set(formatInstanceData(data.Reservations));
+    setData(formatInstanceData(data.Reservations));
   };
 
-  const [data, setData] = React.useState({});
+  const [data, setData] = React.useState<Array<InstanceRow>>([]);
 
   React.useEffect(() => {
-    getData(setData);
+    getData();
   }, []);
 
   const formatInstanceData = (
     xs: DescribeInstancesCommandOutput["Reservations"]
-  ) => {
+  ): InstanceRow[] => {
     return xs
-      ? xs.map((x) => {
-          return x.Instances?.map((instance): InstanceRow => {
-            const name = instance.PublicDnsName ?? "";
-            const instanceId = instance.InstanceId ?? "";
-            const type = instance.InstanceType ?? "";
-            const state = instance.State?.Name ?? "";
-            const availabilityZone = instance.Placement?.AvailabilityZone ?? "";
-            const publicIP = instance.PublicIpAddress ?? "";
-            const privateIP = instance.PrivateIpAddress ?? "";
+      ? xs.flatMap((x) => {
+          return x.Instances
+            ? x.Instances.map((instance): InstanceRow => {
+                const name = instance.PublicDnsName ?? "";
+                const instanceId = instance.InstanceId ?? "";
+                const type = instance.InstanceType ?? "";
+                const state = instance.State?.Name ?? "";
+                const availabilityZone =
+                  instance.Placement?.AvailabilityZone ?? "";
+                const publicIP = instance.PublicIpAddress ?? "";
+                const privateIP = instance.PrivateIpAddress ?? "";
 
-            return {
-              name,
-              instanceId,
-              type,
-              state,
-              availabilityZone,
-              publicIP,
-              privateIP,
-            };
-          });
+                return {
+                  id: instanceId,
+                  name,
+                  instanceId,
+                  type,
+                  state,
+                  availabilityZone,
+                  publicIP,
+                  privateIP,
+                };
+              })
+            : [];
         })
       : [];
   };
@@ -97,7 +114,9 @@ export const Table = (props: { user: any }) => {
   return (
     <Box>
       <Typography>EC2 Instances</Typography>
-      {JSON.stringify(data, null, 2)}
+      <Box sx={{ width: 1200, height: 800 }}>
+        <DataGrid rows={data} columns={columns} />
+      </Box>
     </Box>
   );
 };

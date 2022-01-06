@@ -1,6 +1,10 @@
 import { Auth } from "aws-amplify";
 import React from "react";
 import { OnLoginSubmit, OnSignOut, User } from "../types";
+import awsExports from "./../aws-exports";
+import { Amplify } from "aws-amplify";
+
+Amplify.configure(awsExports);
 
 export const Authentication = (props: {
   unauthenticatedPage: (props_: {
