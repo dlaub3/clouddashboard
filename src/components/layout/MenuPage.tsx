@@ -10,8 +10,8 @@ export const MenuPage = (props: {
     <>
       <CssBaseline />
       {props.menu}
-      <Box sx={{ bgcolor: "#cfe8fc", height: "100vh" }}>
-        <Container maxWidth="sm">{props.children}</Container>
+      <Box sx={{ bgcolor: "whitesmoke", height: "100vh" }}>
+        <Container maxWidth="lg">{props.children}</Container>
       </Box>
     </>
   );

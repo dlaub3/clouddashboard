@@ -9,7 +9,9 @@ import {
 } from "@aws-sdk/client-ec2";
 import { fromCognitoIdentityPool } from "@aws-sdk/credential-providers";
 import { AWS_IDENTITY_POOL_ID, AWS_REGION } from "../env";
-import { DataGrid, GridRowsProp, GridColDef } from "@mui/x-data-grid";
+import { DataGrid, GridColDef } from "@mui/x-data-grid";
+import { InstanceRow } from "../types";
+import { fakeRowData } from "./__tests__/Table.data";
 
 const getCognitoLoginData = (user: any) => {
   /**
@@ -37,17 +39,6 @@ const getCognitoCredentials = (user: any) => {
     logins: getCognitoLoginData(user),
   });
 };
-
-interface InstanceRow {
-  id: string;
-  name: string;
-  instanceId: string;
-  type: string;
-  state: string;
-  availabilityZone: string;
-  publicIP: string;
-  privateIP: string;
-}
 
 const columns: GridColDef[] = [
   { field: "instanceId", headerName: "Instance Id", width: 150 },
@@ -114,8 +105,8 @@ export const Table = (props: { user: any }) => {
   return (
     <Box>
       <Typography>EC2 Instances</Typography>
-      <Box sx={{ width: 1200, height: 800 }}>
-        <DataGrid rows={data} columns={columns} />
+      <Box sx={{ width: 900, height: 600 }}>
+        <DataGrid rows={fakeRowData} columns={columns} />
       </Box>
     </Box>
   );
