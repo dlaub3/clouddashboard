@@ -5,34 +5,39 @@ import MenuBar from "./components/layout/MenuBar";
 import { Authentication } from "./components/Authentication";
 import { SignInForm } from "./components/SignInForm";
 import { Table } from "./components/Table";
-import { Paper } from "@mui/material";
+import DefaultErrorBoundary from "./components/DefaultErrorBoundry";
+import Box from "@mui/material/Box";
 
 function App() {
   return (
-    <Authentication
-      unauthenticatedPage={({ errorMsg, onSubmit, isSubmitting }) => (
-        <MenuPageLayout menu={<MenuBar isAuthenticated={false} />}>
-          <SignInForm
-            errorMsg={errorMsg}
-            onSubmit={onSubmit}
-            isSubmitting={isSubmitting}
-          />
-        </MenuPageLayout>
-      )}
-      authenticatedPage={({ user, onSignOut }) => (
-        <MenuPageLayout
-          menu={
-            <MenuBar
-              username={user.username}
-              isAuthenticated={true}
-              logout={onSignOut}
+    <DefaultErrorBoundary>
+      <Authentication
+        unauthenticatedPage={({ errorMsg, onSubmit, isSubmitting }) => (
+          <MenuPageLayout menu={<MenuBar isAuthenticated={false} />}>
+            <SignInForm
+              errorMsg={errorMsg}
+              onSubmit={onSubmit}
+              isSubmitting={isSubmitting}
             />
-          }
-        >
-          <Table user={user} />
-        </MenuPageLayout>
-      )}
-    />
+          </MenuPageLayout>
+        )}
+        authenticatedPage={({ user, onSignOut }) => (
+          <MenuPageLayout
+            menu={
+              <MenuBar
+                username={user.username}
+                isAuthenticated={true}
+                logout={onSignOut}
+              />
+            }
+          >
+            <Box pt="1.5em" pb="2em">
+              <Table user={user} />
+            </Box>
+          </MenuPageLayout>
+        )}
+      />
+    </DefaultErrorBoundary>
   );
 }
 

@@ -18,7 +18,12 @@ export const MenuPageLayout = (props: {
         }}
       >
         <Container
-          sx={{ minHeight: "100%", padding: "1.5em 2em", overflow: "hidden" }}
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            maxHeight: "100%",
+            overflow: "hidden",
+          }}
           maxWidth="lg"
         >
           {props.children}

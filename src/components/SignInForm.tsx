@@ -26,7 +26,8 @@ export const SignInForm = (props: {
 
   return (
     <Box
-      height="100%"
+      flex={1}
+      flexBasis={"100%"}
       display="flex"
       flexDirection="column"
       justifyContent="center"

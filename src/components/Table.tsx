@@ -162,7 +162,7 @@ export const Table = (props: { user: User }) => {
       <Paper
         sx={{
           width: "100%",
-          height: 800,
+          height: 750,
           display: "flex",
           justifyContent: "center",
           alignItems: "center",

@@ -70,6 +70,7 @@ export const Authentication = (props: {
   const checkSession = async () => {
     try {
       const session = await Auth.currentSession();
+
       if (session.isValid()) {
         try {
           const user = await Auth.currentUserPoolUser();
