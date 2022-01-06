@@ -1,4 +1,6 @@
-export interface User {}
+export interface User {
+  username: string;
+}
 
 export type OnLoginSubmit = (props: {
   username: string;

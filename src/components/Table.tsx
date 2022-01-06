@@ -6,12 +6,22 @@ import {
   DescribeInstancesCommand,
   DescribeInstancesCommandOutput,
   EC2Client,
+  Reservation,
 } from "@aws-sdk/client-ec2";
 import { fromCognitoIdentityPool } from "@aws-sdk/credential-providers";
 import { AWS_IDENTITY_POOL_ID, AWS_REGION } from "../env";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
-import { InstanceRow } from "../types";
+import { InstanceRow, User } from "../types";
 import { fakeRowData } from "./__tests__/Table.data";
+import CircularProgress from "@mui/material/CircularProgress";
+
+export default function CircularIndeterminate() {
+  return (
+    <Box sx={{ display: "flex" }}>
+      <CircularProgress />
+    </Box>
+  );
+}
 
 const getCognitoLoginData = (user: any) => {
   /**
@@ -50,25 +60,63 @@ const columns: GridColDef[] = [
   { field: "publicIP", headerName: "Private IP", width: 150 },
 ];
 
-export const Table = (props: { user: any }) => {
-  const { user } = props;
-
-  const ec2 = new EC2Client({
+const newEc2Client = (user: any) =>
+  new EC2Client({
     region: AWS_REGION,
     credentials: getCognitoCredentials(user),
   });
 
-  const getData = async () => {
-    const command = new DescribeInstancesCommand({});
-    const data = await ec2.send(command);
-    setData(formatInstanceData(data.Reservations));
+const getRecursiveDescribeInstancesCommand = (ec2: EC2Client) =>
+  async function recursiveDescribeInstancesCommand(params: {
+    NextToken?: string;
+    data: Reservation[];
+  }) {
+    // It appears that MaxResults is 1000
+    // https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/clients/client-ec2/interfaces/describeinstancescommandinput.html
+    // so additional calls will be required to load all of the instances for FE sorting
+    // since the API doesn't appear to provide sorting based on Instance fields.
+    const command = new DescribeInstancesCommand({
+      // 0 (pending), 16 (running), 32 (shutting-down), 48 (terminated), 64 (stopping), and 80 (stopped).
+      Filters: [
+        { Name: "instance-state-code", Values: ["0", "16", "32", "48", "64"] },
+      ],
+      NextToken: params.NextToken,
+    });
+
+    const data: Reservation[] = await ec2
+      .send(command)
+      .then(({ Reservations, NextToken }) => {
+        return NextToken
+          ? recursiveDescribeInstancesCommand({
+              data: Reservations ?? [],
+              NextToken,
+            })
+          : Reservations ?? [];
+      });
+
+    return params.data.concat(data);
   };
 
+export const Table = (props: { user: User }) => {
+  const { user } = props;
+
+  const ec2 = React.useMemo(() => newEc2Client(user), [user]);
+  const recursiveDescribeInstancesCommand = React.useMemo(
+    () => getRecursiveDescribeInstancesCommand(ec2),
+    [ec2]
+  );
+
   const [data, setData] = React.useState<Array<InstanceRow>>([]);
+  const [isLoading, setIsLoading] = React.useState(false);
 
   React.useEffect(() => {
-    getData();
-  }, []);
+    setIsLoading(true);
+    recursiveDescribeInstancesCommand({ data: [] })
+      .then((data) => {
+        setData(formatInstanceData(data));
+      })
+      .finally(() => setIsLoading(false));
+  }, [recursiveDescribeInstancesCommand]);
 
   const formatInstanceData = (
     xs: DescribeInstancesCommandOutput["Reservations"]
@@ -103,10 +151,19 @@ export const Table = (props: { user: any }) => {
   };
 
   return (
-    <Box>
-      <Typography>EC2 Instances</Typography>
-      <Box sx={{ width: 900, height: 600 }}>
-        <DataGrid rows={fakeRowData} columns={columns} />
+    <Box
+      display="flex"
+      flexDirection="column"
+      alignItems="flex-start"
+      justifyContent="space-around"
+    >
+      <Typography variant="h3">Active EC2 Instance Fleet</Typography>
+      <Box sx={{ width: "100%", height: 800 }}>
+        {isLoading ? (
+          <CircularIndeterminate />
+        ) : (
+          <DataGrid rows={fakeRowData} columns={columns} />
+        )}
       </Box>
     </Box>
   );

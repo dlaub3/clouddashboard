@@ -2,7 +2,7 @@ import Box from "@mui/material/Box";
 import Container from "@mui/material/Container";
 import CssBaseline from "@mui/material/CssBaseline";
 
-export const MenuPage = (props: {
+export const MenuPageLayout = (props: {
   children: JSX.Element;
   menu: JSX.Element;
 }) => {

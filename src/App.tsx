@@ -1,6 +1,6 @@
 import "./App.css";
 import "@aws-amplify/ui-react/styles.css";
-import { MenuPage } from "./components/layout/MenuPage";
+import { MenuPageLayout } from "./components/layout/MenuPageLayout";
 import MenuBar from "./components/layout/MenuBar";
 import { Authentication } from "./components/Authentication";
 import { SignInForm } from "./components/SignInForm";
@@ -10,17 +10,24 @@ function App() {
   return (
     <Authentication
       unauthenticatedPage={({ onSubmit, isSubmitting }) => (
-        <MenuPage menu={<MenuBar isAuthenticated={false} />}>
+        <MenuPageLayout menu={<MenuBar isAuthenticated={false} />}>
           <SignInForm onSubmit={onSubmit} isSubmitting={isSubmitting} />
-        </MenuPage>
+        </MenuPageLayout>
       )}
       authenticatedPage={({ user, onSignOut }) => (
-        <MenuPage menu={<MenuBar isAuthenticated={true} logout={onSignOut} />}>
+        <MenuPageLayout
+          menu={
+            <MenuBar
+              username={user.username}
+              isAuthenticated={true}
+              logout={onSignOut}
+            />
+          }
+        >
           <>
-            Welcome {(user as any).username}
             <Table user={user} />
           </>
-        </MenuPage>
+        </MenuPageLayout>
       )}
     />
   );

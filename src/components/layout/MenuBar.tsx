@@ -13,6 +13,7 @@ export default function MenuBar(
     | {
         logout: () => void;
         isAuthenticated: true;
+        username: string;
       }
     | { isAuthenticated: false }
 ) {
@@ -41,7 +42,13 @@ export default function MenuBar(
             Cloud Dashboard
           </Typography>
           {props.isAuthenticated && (
-            <Box>
+            <Box
+              display="flex"
+              flexDirection="row"
+              alignItems="center"
+              justifyContent="space-around"
+            >
+              <Typography>Welcome, {props.username}</Typography>
               <IconButton
                 size="large"
                 aria-label="account of current user"
@@ -52,6 +59,7 @@ export default function MenuBar(
               >
                 <AccountCircle />
               </IconButton>
+
               <Menu
                 id="menu-appbar"
                 anchorEl={anchorEl}
