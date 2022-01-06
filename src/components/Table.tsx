@@ -171,7 +171,7 @@ export const Table = (props: { user: User }) => {
         {isLoading ? (
           <CircularIndeterminate />
         ) : (
-          <DataGrid rows={fakeRowData} columns={columns} />
+          <DataGrid rows={data} columns={columns} />
         )}
       </Paper>
     </Box>
