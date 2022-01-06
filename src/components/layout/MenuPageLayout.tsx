@@ -10,8 +10,19 @@ export const MenuPageLayout = (props: {
     <>
       <CssBaseline />
       {props.menu}
-      <Box sx={{ bgcolor: "whitesmoke", height: "100vh" }}>
-        <Container maxWidth="lg">{props.children}</Container>
+      <Box
+        sx={{
+          bgcolor: "whitesmoke",
+          height: "calc(100vh - 64px)",
+          overflowY: "auto",
+        }}
+      >
+        <Container
+          sx={{ minHeight: "100%", padding: "1.5em 2em", overflow: "hidden" }}
+          maxWidth="lg"
+        >
+          {props.children}
+        </Container>
       </Box>
     </>
   );

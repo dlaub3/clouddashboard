@@ -5,13 +5,18 @@ import MenuBar from "./components/layout/MenuBar";
 import { Authentication } from "./components/Authentication";
 import { SignInForm } from "./components/SignInForm";
 import { Table } from "./components/Table";
+import { Paper } from "@mui/material";
 
 function App() {
   return (
     <Authentication
-      unauthenticatedPage={({ onSubmit, isSubmitting }) => (
+      unauthenticatedPage={({ errorMsg, onSubmit, isSubmitting }) => (
         <MenuPageLayout menu={<MenuBar isAuthenticated={false} />}>
-          <SignInForm onSubmit={onSubmit} isSubmitting={isSubmitting} />
+          <SignInForm
+            errorMsg={errorMsg}
+            onSubmit={onSubmit}
+            isSubmitting={isSubmitting}
+          />
         </MenuPageLayout>
       )}
       authenticatedPage={({ user, onSignOut }) => (
@@ -24,9 +29,7 @@ function App() {
             />
           }
         >
-          <>
-            <Table user={user} />
-          </>
+          <Table user={user} />
         </MenuPageLayout>
       )}
     />

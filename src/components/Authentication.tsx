@@ -6,8 +6,18 @@ import { Amplify } from "aws-amplify";
 
 Amplify.configure(awsExports);
 
+const isNotAuthorizedException = (
+  x: unknown
+): x is { __type: "NotAuthorizedException"; message: string } =>
+  x !== null &&
+  typeof x === "object" &&
+  "__type" in x &&
+  "message" in x &&
+  (x as { __type?: string }).__type === "NotAuthorizeException";
+
 export const Authentication = (props: {
   unauthenticatedPage: (props_: {
+    errorMsg: string;
     onSubmit: OnLoginSubmit;
     isSubmitting: boolean;
   }) => JSX.Element;
@@ -16,6 +26,7 @@ export const Authentication = (props: {
     onSignOut: OnSignOut;
   }) => JSX.Element;
 }) => {
+  const [errorMsg, setErrorMsg] = React.useState("");
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [authData, setAuthData] = React.useState<
     | { isAuthenticated: false; user: null }
@@ -28,8 +39,19 @@ export const Authentication = (props: {
     try {
       const user = await Auth.signIn(props_.username, props_.password);
       setAuthData({ isAuthenticated: true, user });
-    } catch (error) {
+    } catch (error: unknown | { __type: string; message: string }) {
       /* TODO: Handle error Daniel Laubacher  Wed 05 Jan 2022 **/
+      if (error instanceof Error && error.name === "AuthError") {
+        const { name, message } = error as any;
+        if (name === "AuthError") {
+          setErrorMsg(message);
+        }
+      } else if (isNotAuthorizedException(error)) {
+        setErrorMsg(error.message);
+      } else {
+        setErrorMsg("An unknown error occured. Please try again.");
+      }
+
       console.log("error signing in", error);
     }
     setIsSubmitting(false);
@@ -67,5 +89,5 @@ export const Authentication = (props: {
 
   return authData.isAuthenticated
     ? props.authenticatedPage({ ...authData, onSignOut })
-    : props.unauthenticatedPage({ onSubmit: onLogin, isSubmitting });
+    : props.unauthenticatedPage({ onSubmit: onLogin, isSubmitting, errorMsg });
 };

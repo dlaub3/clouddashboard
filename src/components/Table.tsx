@@ -14,6 +14,7 @@ import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import { InstanceRow, User } from "../types";
 import { fakeRowData } from "./__tests__/Table.data";
 import CircularProgress from "@mui/material/CircularProgress";
+import { Paper } from "@mui/material";
 
 export default function CircularIndeterminate() {
   return (
@@ -158,13 +159,21 @@ export const Table = (props: { user: User }) => {
       justifyContent="space-around"
     >
       <Typography variant="h3">Active EC2 Instance Fleet</Typography>
-      <Box sx={{ width: "100%", height: 800 }}>
+      <Paper
+        sx={{
+          width: "100%",
+          height: 800,
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
         {isLoading ? (
           <CircularIndeterminate />
         ) : (
           <DataGrid rows={fakeRowData} columns={columns} />
         )}
-      </Box>
+      </Paper>
     </Box>
   );
 };
