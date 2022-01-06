@@ -3,6 +3,7 @@ import React from "react";
 import { OnLoginSubmit, OnSignOut, User } from "../types";
 import awsExports from "./../aws-exports";
 import { Amplify } from "aws-amplify";
+import CircularIndeterminate from "./Table";
 
 Amplify.configure(awsExports);
 
@@ -27,6 +28,7 @@ export const Authentication = (props: {
   }) => JSX.Element;
 }) => {
   const [errorMsg, setErrorMsg] = React.useState("");
+  const [isLoading, setIsLoading] = React.useState(true);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [authData, setAuthData] = React.useState<
     | { isAuthenticated: false; user: null }
@@ -68,6 +70,7 @@ export const Authentication = (props: {
   };
 
   const checkSession = async () => {
+    setIsLoading(true);
     try {
       const session = await Auth.currentSession();
 
@@ -82,13 +85,18 @@ export const Authentication = (props: {
     } catch (error) {
       console.log("error getting session ifno: ", error);
     }
+    setIsLoading(false);
   };
 
   React.useEffect(() => {
     checkSession();
   }, []);
 
-  return authData.isAuthenticated
-    ? props.authenticatedPage({ ...authData, onSignOut })
-    : props.unauthenticatedPage({ onSubmit: onLogin, isSubmitting, errorMsg });
+  return isLoading ? (
+    <CircularIndeterminate />
+  ) : authData.isAuthenticated ? (
+    props.authenticatedPage({ ...authData, onSignOut })
+  ) : (
+    props.unauthenticatedPage({ onSubmit: onLogin, isSubmitting, errorMsg })
+  );
 };
