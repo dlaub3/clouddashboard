@@ -36,9 +36,30 @@ export const Authentication = (props: {
       await Auth.signOut();
       setAuthData({ isAuthenticated: false, user: null });
     } catch (error) {
+      /* TODO: Handle error Daniel Laubacher  Wed 05 Jan 2022 **/
       console.log("error signing out: ", error);
     }
   };
+
+  const checkSession = async () => {
+    try {
+      const session = await Auth.currentSession();
+      if (session.isValid()) {
+        try {
+          const user = await Auth.currentUserPoolUser();
+          setAuthData({ isAuthenticated: true, user });
+        } catch (error) {
+          throw error;
+        }
+      }
+    } catch (error) {
+      console.log("error getting session ifno: ", error);
+    }
+  };
+
+  React.useEffect(() => {
+    checkSession();
+  }, []);
 
   return authData.isAuthenticated
     ? props.authenticatedPage({ ...authData, onSignOut })

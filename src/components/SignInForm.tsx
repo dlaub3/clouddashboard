@@ -7,6 +7,7 @@ export const SignInForm = (props: {
   onSubmit: OnLoginSubmit;
   isSubmitting: boolean;
 }) => {
+  /* TODO: Handle Error/Validation Daniel Laubacher  Wed 05 Jan 2022 **/
   const isError = false;
   const [username, setUsername] = React.useState("");
   const [password, setPassword] = React.useState("");
