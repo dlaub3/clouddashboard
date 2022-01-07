@@ -7,7 +7,6 @@ import { OnChangePassword, OnLoginSubmit } from "../types";
 import Paper from "@mui/material/Paper";
 import Box from "@mui/material/Box";
 import Alert from "@mui/material/Alert";
-import AlertTitle from "@mui/material/AlertTitle";
 import { css } from "@mui/material/styles";
 import { LoginFlow } from "./Authentication";
 
