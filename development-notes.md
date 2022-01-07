@@ -85,7 +85,8 @@ The dashboard will only allow previously setup accounts to login. There is no
 "sign-up" flow. This is by design since the intention is for the app to be used 
 internally by auditors. So an admin must create accounts in the Cognito User 
 Pool. This grants access only to specific AWS resources allowed by an IAM Role 
-and does not require giving out IAM credentials.
+and does not require giving out IAM credentials. Admittedly, my login code is 
+rough and in need of refinement.
 
 In order to support table column sorting it was necessary to load all of the EC2 
 instance data and sort on the frontend of the application. Ideally the backend 
