@@ -9,7 +9,6 @@ export default class DefaultErrorBoundary extends React.Component {
     isError: false,
   };
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
   static getDerivedStateFromError() {
     return { isError: true };
   }
@@ -18,11 +17,8 @@ export default class DefaultErrorBoundary extends React.Component {
     children: propTypes.node.isRequired,
   };
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
   render() {
-    const { isError } = this.state;
-    const { children } = this.props;
-    return isError ? (
+    return this.state.isError ? (
       <Box
         display="flex"
         flexDirection="column"
@@ -43,7 +39,7 @@ export default class DefaultErrorBoundary extends React.Component {
         </Button>
       </Box>
     ) : (
-      children
+      this.props.children
     );
   }
 }

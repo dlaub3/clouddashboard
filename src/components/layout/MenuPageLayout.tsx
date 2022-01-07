@@ -22,7 +22,7 @@ export const MenuPageLayout = (props: {
             display: "flex",
             flexDirection: "column",
             height: "100%",
-            overflow: "hidden",
+            overflow: "auto",
           }}
           maxWidth="lg"
         >

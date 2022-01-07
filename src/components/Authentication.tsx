@@ -3,7 +3,7 @@ import React from "react";
 import { OnLoginSubmit, OnSignOut, User } from "../types";
 import awsExports from "./../aws-exports";
 import { Amplify } from "aws-amplify";
-import CircularIndeterminate from "./Table";
+import CircularIndeterminate from "./loaders/CircularIndeterminate";
 
 Amplify.configure(awsExports);
 
@@ -42,7 +42,7 @@ export const Authentication = (props: {
       const user = await Auth.signIn(props_.username, props_.password);
       setAuthData({ isAuthenticated: true, user });
     } catch (error: unknown | { __type: string; message: string }) {
-      /* TODO: Handle error Daniel Laubacher  Wed 05 Jan 2022 **/
+      /* TODO: Improve error handling Daniel Laubacher  Wed 05 Jan 2022 **/
       if (error instanceof Error && error.name === "AuthError") {
         const { name, message } = error as any;
         if (name === "AuthError") {
@@ -64,7 +64,7 @@ export const Authentication = (props: {
       await Auth.signOut();
       setAuthData({ isAuthenticated: false, user: null });
     } catch (error) {
-      /* TODO: Handle error Daniel Laubacher  Wed 05 Jan 2022 **/
+      /* TODO: Improve error handling Daniel Laubacher  Wed 05 Jan 2022 **/
       console.log("error signing out: ", error);
     }
   };
@@ -83,7 +83,8 @@ export const Authentication = (props: {
         }
       }
     } catch (error) {
-      console.log("error getting session ifno: ", error);
+      /* TODO: Improve error handling Daniel Laubacher  Wed 05 Jan 2022 **/
+      console.log("error getting session info: ", error);
     }
     setIsLoading(false);
   };

@@ -3,7 +3,7 @@ import { InstanceRow } from "../../types";
 
 const getFakeInstanceRow = (): InstanceRow => ({
   id: faker.random.word(),
-  name: faker.random.word(),
+  publicDnsName: faker.random.word(),
   instanceId: faker.random.word(),
   type: faker.random.word(),
   state: faker.random.word(),
