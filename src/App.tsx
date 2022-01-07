@@ -12,11 +12,19 @@ function App() {
   return (
     <DefaultErrorBoundary>
       <Authentication
-        unauthenticatedPage={({ errorMsg, onSubmit, isSubmitting }) => (
+        unauthenticatedPage={({
+          loginFlow,
+          errorMsg,
+          onSubmit,
+          onChangePassword,
+          isSubmitting,
+        }) => (
           <MenuPageLayout menu={<MenuBar isAuthenticated={false} />}>
             <SignInForm
+              loginFlow={loginFlow}
               errorMsg={errorMsg}
               onSubmit={onSubmit}
+              onChangePassword={onChangePassword}
               isSubmitting={isSubmitting}
             />
           </MenuPageLayout>

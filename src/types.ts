@@ -13,6 +13,8 @@ export interface User {
   storage: Record<string, string>;
 }
 
+export type OnChangePassword = (props: { password: string }) => void;
+
 export type OnLoginSubmit = (props: {
   username: string;
   password: string;

@@ -1,11 +1,20 @@
 import { Auth } from "aws-amplify";
 import React from "react";
-import { OnLoginSubmit, OnSignOut, User } from "../types";
+import { OnLoginSubmit, OnChangePassword, OnSignOut, User } from "../types";
 import awsExports from "./../aws-exports";
 import { Amplify } from "aws-amplify";
 import CircularIndeterminate from "./loaders/CircularIndeterminate";
 
 Amplify.configure(awsExports);
+
+interface AuthData {
+  isAuthenticated: boolean;
+  user: User | null;
+}
+
+const isAuthOK = (x: AuthData): x is { isAuthenticated: true; user: User } => {
+  return x.isAuthenticated && x.user !== null;
+};
 
 const isNotAuthorizedException = (
   x: unknown
@@ -16,31 +25,59 @@ const isNotAuthorizedException = (
   "message" in x &&
   (x as { __type?: string }).__type === "NotAuthorizeException";
 
+export enum LoginFlow {
+  LOGIN = "LOGIN",
+  CHANGE_PASSWORD = "CHANGE_PASSWORD",
+}
+
 export const Authentication = (props: {
   unauthenticatedPage: (props_: {
+    loginFlow: LoginFlow;
     errorMsg: string;
     onSubmit: OnLoginSubmit;
     isSubmitting: boolean;
+    onChangePassword: OnChangePassword;
   }) => JSX.Element;
   authenticatedPage: (props_: {
     user: User;
     onSignOut: OnSignOut;
   }) => JSX.Element;
 }) => {
+  const [loginFlow, setLoginFlow] = React.useState(LoginFlow.LOGIN);
   const [errorMsg, setErrorMsg] = React.useState("");
   const [isLoading, setIsLoading] = React.useState(true);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
-  const [authData, setAuthData] = React.useState<
-    | { isAuthenticated: false; user: null }
-    | { isAuthenticated: true; user: User }
-  >({ isAuthenticated: false, user: null });
+  const [authData, setAuthData] = React.useState<AuthData>({
+    isAuthenticated: false,
+    user: null,
+  });
+
+  const onChangePassword = async (props_: { password: string }) => {
+    setIsSubmitting(true);
+
+    try {
+      await Auth.completeNewPassword(authData.user, props_.password, []);
+      setAuthData((auth) => ({ isAuthenticated: true, user: auth.user }));
+    } catch (error: unknown | { __type: string; message: string }) {
+      /* TODO: Improve error handling Daniel Laubacher  Wed 05 Jan 2022 **/
+      setErrorMsg("An unknown error occured. Please try again.");
+      console.log("error changing password:", error);
+    }
+    setIsSubmitting(false);
+    setLoginFlow(LoginFlow.LOGIN);
+  };
 
   const onLogin = async (props_: { username: string; password: string }) => {
     setIsSubmitting(true);
 
     try {
       const user = await Auth.signIn(props_.username, props_.password);
-      setAuthData({ isAuthenticated: true, user });
+      if (user.challengeName === "NEW_PASSWORD_REQUIRED") {
+        setLoginFlow(LoginFlow.CHANGE_PASSWORD);
+        setAuthData({ isAuthenticated: false, user });
+      } else {
+        setAuthData({ isAuthenticated: true, user });
+      }
     } catch (error: unknown | { __type: string; message: string }) {
       /* TODO: Improve error handling Daniel Laubacher  Wed 05 Jan 2022 **/
       if (error instanceof Error && error.name === "AuthError") {
@@ -54,7 +91,7 @@ export const Authentication = (props: {
         setErrorMsg("An unknown error occured. Please try again.");
       }
 
-      console.log("error signing in", error);
+      console.log("error signing in:", error);
     }
     setIsSubmitting(false);
   };
@@ -95,9 +132,15 @@ export const Authentication = (props: {
 
   return isLoading ? (
     <CircularIndeterminate />
-  ) : authData.isAuthenticated ? (
+  ) : isAuthOK(authData) ? (
     props.authenticatedPage({ ...authData, onSignOut })
   ) : (
-    props.unauthenticatedPage({ onSubmit: onLogin, isSubmitting, errorMsg })
+    props.unauthenticatedPage({
+      onSubmit: onLogin,
+      isSubmitting,
+      errorMsg,
+      loginFlow,
+      onChangePassword,
+    })
   );
 };
