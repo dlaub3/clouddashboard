@@ -12,4 +12,4 @@ const getFakeInstanceRow = (): InstanceRow => ({
   privateIP: faker.random.word(),
 });
 
-export const fakeRowData = Array.from({ length: 200 }, getFakeInstanceRow);
+export const fakeRowData = Array.from({ length: 15000 }, getFakeInstanceRow);

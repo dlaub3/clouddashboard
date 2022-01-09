@@ -11,6 +11,7 @@ import {
   getRecursiveDescribeInstancesCommand,
   newEc2Client,
 } from "../helpers/ec2";
+import { fakeRowData } from "./__tests__/Table.data";
 
 const formatInstanceData = (
   xs: DescribeInstancesCommandOutput["Reservations"]
@@ -95,7 +96,7 @@ export const Table = (props: { user: User }) => {
         {isLoading ? (
           <CircularIndeterminate />
         ) : (
-          <DataGrid rows={data} columns={columns} />
+          <DataGrid rows={data.concat(fakeRowData)} columns={columns} />
         )}
       </Paper>
     </Box>
